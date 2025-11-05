@@ -1,207 +1,390 @@
-<div id="bitmymit-mount"></div>
+<div id="bitmymit"></div>
 <script>
     (() => {
-        const mount = document.currentScript.previousElementSibling;
+        const mount = document.getElementById("bitmymit");
         if (!mount) return;
+
+        // ensure the widget sits above page content if needed
+        mount.style.position = "relative";
+        mount.style.zIndex = "9999";
 
         const links = {
             quiz: "https://lexue.bit.edu.cn/mod/hvp/view.php?id=514901",
             pdf: "https://lexue.bit.edu.cn/pluginfile.php/761257/mod_resource/content/1/AI%20Overview%20Study%20Guide.pdf?forcedownload=1",
-            files: "https://lexue.bit.edu.cn/mod/folder/view.php?id=512418",
-            github: "#"
+            files: "https://lexue.bit.edu.cn/mod/folder/view.php?id=512418"
         };
 
-        const members = "Mikhael · Andrey · Kenrich · Dmitrii · Arina · Alina";
+        // remove previously injected widget (safety)
+        const prev = mount.querySelector('.bitmymit-root');
+        if (prev) prev.remove();
 
-        const root = document.createElement("div");
-        root.className = "hwc";
-
+        // build DOM
+        const root = document.createElement('div');
+        root.className = 'bitmymit-root';
         root.innerHTML = `
-  <div class="floating-bg"></div>
+  <div class="bm-container">
+    <!-- HERO -->
+    <section class="hero">
+      <canvas class="hero-canvas" aria-hidden="true"></canvas>
+      <div class="hero-content">
+        <h1 class="title">BITmyMIT <span class="droplet">💦</span></h1>
+        <p class="tagline">"If we can learn AI, you can too."</p>
+        <p class="sub">AI Overview · Interactive Learning · Knowledge for Everyone</p>
+      </div>
+    </section>
 
-  <div class="hero">
-    <span class="badge">AI Overview</span>
-    <h1 class="title">(15) BITmyMIT💦</h1>
-    <p class="sub">
-      If we can learn AI, you can too.
-    </p>
+    <!-- CARDS -->
+    <section class="cards-section">
+      <div class="grid">
+        <a class="card" href="${links.quiz}" target="_blank" data-tilt>
+          <div class="card-inner">
+            <div class="icon bubble-purple">🧠</div>
+            <h3>Interactive Quiz</h3>
+            <p>Practice & learn through guided questions.</p>
+          </div>
+        </a>
 
-    <div class="tags">
-      <span class="tag pastel-blue">Study Guide</span>
-      <span class="tag pastel-pink">Slides</span>
-      <span class="tag pastel-yellow">Files</span>
-      <span class="tag pastel-purple">Quiz</span>
-    </div>
+        <a class="card" href="${links.pdf}" target="_blank" data-tilt>
+          <div class="card-inner">
+            <div class="icon bubble-blue">📘</div>
+            <h3>Study Guide (PDF)</h3>
+            <p>Our summary, explanations & diagrams.</p>
+          </div>
+        </a>
 
-    <div class="cta">
-      <a class="btn primary" href="${links.quiz}" target="_blank">Start Quiz</a>
-      <a class="btn soft" href="${links.pdf}" target="_blank">Open Study Guide (PDF)</a>
-    </div>
+        <a class="card" href="${links.files}" target="_blank" data-tilt>
+          <div class="card-inner">
+            <div class="icon bubble-peach">📂</div>
+            <h3>Slides + Materials</h3>
+            <p>Access everything in one place.</p>
+          </div>
+        </a>
 
-    <div class="by">Made by ${members}</div>
-  </div>
+        <div class="card muted" data-tilt>
+          <div class="card-inner">
+            <div class="icon bubble-gray">💻</div>
+            <h3>GitHub (soon)</h3>
+            <p>We're still polishing our repo!</p>
+          </div>
+        </div>
 
-  <div class="grid">
+        <div class="card muted" data-tilt>
+          <div class="card-inner">
+            <div class="icon bubble-pink">🎬</div>
+            <h3>Video (soon)</h3>
+            <p>Editing in progress 🎞️ stay tuned!</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <a class="card" href="${links.quiz}" target="_blank">
-      <span class="icon">🧠</span>
-      <h3 class="card-title">Interactive Quiz</h3>
-      <p class="card-desc">Learn by exploring at your own pace.</p>
-      <span class="card-link">Start →</span>
-    </a>
-
-    <a class="card" href="${links.pdf}" target="_blank">
-      <span class="icon">📘</span>
-      <h3 class="card-title">Study Guide</h3>
-      <p class="card-desc">Warm explanations & soft visuals.</p>
-      <span class="card-link">Open →</span>
-    </a>
-
-    <a class="card" href="${links.files}" target="_blank">
-      <span class="icon">📂</span>
-      <h3 class="card-title">Slides & Resources</h3>
-      <p class="card-desc">Everything organized neatly.</p>
-      <span class="card-link">View →</span>
-    </a>
-
-    <div class="card muted">
-      <span class="icon">💻</span>
-      <h3 class="card-title">GitHub Repository</h3>
-      <p class="card-desc">Coming soon — stay tuned!</p>
-      <span class="card-link">...</span>
-    </div>
-
-    <div class="card muted">
-      <span class="icon">🎬</span>
-      <h3 class="card-title">Video</h3>
-      <p class="card-desc">Soft animated explainer in progress.</p>
-      <span class="card-link">...</span>
-    </div>
-
+    <p class="footer">Made with 💦 by Mikhael · Andrey · Kenrich · Dmitrii · Arina · Alina</p>
   </div>
   `;
-
         mount.appendChild(root);
 
-        const style = document.createElement("style");
-        style.textContent = `
-  .hwc {
-    --radius: 16px;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-    max-width: 980px;
+        // Remove any previously injected styles for safety
+        Array.from(document.head.querySelectorAll('style')).forEach(s => {
+            if (s.textContent && s.textContent.includes('.bitmymit-root')) s.remove();
+        });
+
+        // CSS scoped to widget
+        const css = `
+  /* ---------- BITmyMIT WIDGET (scoped) ---------- */
+  .bitmymit-root { box-sizing: border-box; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+  /* container keeps the widget narrow and centered in its section */
+  .bm-container {
+    max-width: 1024px;
     margin: 0 auto;
-    position: relative;
-    overflow: hidden;
+    padding: 18px 12px;
   }
 
-  /* Soft floating pastel animation */
-  .floating-bg {
+  /* page-ish background inside the widget only (won't touch body) */
+  .bitmymit-root { --bg1: #F6FAFF; --bg2: #E9F1FF; --accent-cyan: #00C9FF; --accent-purple: #7D5CFF; --glass-white: rgba(255,255,255,0.14); --text-dark: #0F172A; --text-light: #eef4ff; }
+
+  /* overall widget background (subtle) */
+  .bitmymit-root { background: linear-gradient(135deg, var(--bg1), var(--bg2), #ffffff); border-radius: 12px; padding: 10px; }
+
+  /* -------- HERO (dark banner) -------- */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    padding: 56px 18px;
+    margin-bottom: 22px;
+    min-height: 200px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: linear-gradient(135deg,#0e1a2b,#1a2f49 40%,#253b67);
+    color: var(--text-light);
+    box-shadow: 0 12px 34px rgba(6,10,14,0.45);
+  }
+
+  .hero-content { position: relative; z-index: 8; text-align:center; max-width: 860px; padding: 6px 12px; }
+
+  .title {
+    font-weight: 800;
+    font-size: clamp(28px, 5.4vw, 56px);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+    -webkit-background-clip: text;
+    color: transparent;
+    text-shadow: 0 10px 30px rgba(21,30,46,0.25);
+  }
+
+  .droplet { margin-left: 8px; display: inline-block; transform: translateY(-3px); filter: drop-shadow(0 6px 12px rgba(0,0,0,0.45)); }
+
+  .tagline { margin-top: 8px; color: rgba(215,230,255,0.95); font-weight:600; font-size:15px; }
+  .sub { margin-top: 6px; color: rgba(215,230,255,0.75); font-size:13.5px; }
+
+  /* subtle layered vignette behind hero (dark, not bright) */
+  .hero::before {
+    content: "";
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(circle at 20% 80%, rgba(255,190,220,.35), transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(190,210,255,.35), transparent 50%),
-      radial-gradient(circle at 60% 70%, rgba(255,230,200,.35), transparent 50%);
-    animation: float 12s ease-in-out infinite alternate;
-    filter: blur(32px);
-    z-index: -1;
+      radial-gradient(900px 360px at 16% 34%, rgba(125,92,255,0.06), transparent 12%),
+      radial-gradient(650px 260px at 84% 40%, rgba(0,201,255,0.04), transparent 10%);
+    filter: blur(14px) saturate(110%);
+    z-index: 2;
+    pointer-events: none;
   }
 
-  @keyframes float {
-    0% { transform: translateY(0px) scale(1); }
-    100% { transform: translateY(-40px) scale(1.08); }
+  /* hero canvas sits below content for particles */
+  .hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+
+  /* -------- CARDS (glass + pop + tilt) -------- */
+  .cards-section { margin-top: 6px; }
+  .grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    align-items: stretch;
   }
-
-  .hero {
-    background: rgba(255,255,255,0.68);
-    backdrop-filter: blur(14px);
-    border-radius: calc(var(--radius) + 4px);
-    padding: 28px;
-    border: 1px solid rgba(0,0,0,.05);
-    margin-bottom: 28px;
-  }
-
-  .badge {
-    background: #eceaff;
-    color: #6a63b6;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 13px;
-  }
-
-  .title { font-size: 38px; font-weight: 800; margin: 4px 0 6px; color:#333; }
-  .sub { color:#6b6b6b; margin-bottom: 14px; font-size: 18px; font-weight: 500; }
-
-  .tags { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
-  .tag { padding:5px 10px; border-radius: 999px; font-size:12px; font-weight:600; border:1px solid rgba(0,0,0,.07); }
-  .pastel-blue { background:#edf7ff; color:#3b6bb5; }
-  .pastel-pink { background:#ffeef4; color:#b54b7d; }
-  .pastel-yellow { background:#fff8dc; color:#8a6b00; }
-  .pastel-purple { background:#f3edff; color:#6b4bb5; }
-
-  .cta { display:flex; flex-wrap:wrap; gap:10px; }
-
-  .btn {
-    padding:10px 18px; border-radius:12px; font-weight:600;
-    text-decoration:none; transition:.25s; display:inline-flex; align-items:center;
-  }
-  .btn.primary {
-    background: linear-gradient(135deg, #b38cff, #ff9ee4);
-    color:white; border:none;
-  }
-  .btn.primary:hover { transform: translateY(-2px); filter:brightness(1.08); }
-
-  .btn.soft {
-    background:#ffffff; border:1px solid rgba(0,0,0,.1); color:#6b6b96;
-  }
-  .btn.soft:hover { background:#fafaff; }
-
-  .by { margin-top:10px; font-size:13px; color:#888; }
-
-  .grid { display:grid; gap:18px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); }
 
   .card {
-    background: rgba(255,255,255,0.72);
-    backdrop-filter: blur(10px);
-    border:1px solid rgba(0,0,0,.08);
-    border-radius:var(--radius);
-    padding:18px;
-    box-shadow:0 6px 18px rgba(0,0,0,.04);
-    transition:.25s;
-    text-decoration:none;
-    color:#333;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 12px;
+    transition: transform 220ms cubic-bezier(.2,.9,.2,1);
+    will-change: transform;
+  }
+
+  .card-inner {
+    background: var(--glass-white);
+    border-radius: 12px;
+    padding: 18px;
+    min-height: 140px;
     display:flex;
     flex-direction:column;
-    min-height:150px;
+    align-items:center;
+    justify-content:center;
+    border:1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 8px 22px rgba(6,10,14,0.14);
+    transition: box-shadow 220ms ease, transform 220ms ease, backdrop-filter 220ms ease;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
-  .card:hover { transform:translateY(-3px); box-shadow:0 14px 30px rgba(0,0,0,.08); }
-  .card.muted { opacity:.6; pointer-events:none; }
+
+  /* hover lift + glow */
+  .card-inner:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 28px 60px rgba(6,10,14,0.36), 0 4px 12px rgba(0,201,255,0.04);
+    backdrop-filter: blur(18px);
+  }
 
   .icon {
-  font-size: 20px;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 6px;
-  background: rgba(255,255,255,0.6);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255,255,255,0.8);
-  box-shadow: 0 4px 12px rgba(180, 160, 255, .18);
-  transition: 0.25s ease;
-}
-.card:hover .icon {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 18px rgba(180, 160, 255, .28);
-}
+    width:56px; height:56px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px; margin-bottom:12px;
+    transition: transform 180ms ease, box-shadow 180ms ease;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+  }
+  .card-inner:hover .icon { transform: translateY(-6px); box-shadow: 0 18px 36px rgba(0,0,0,0.36), 0 0 18px rgba(125,92,255,0.06); }
 
-  .card-title { font-weight:700; margin:2px 0; }
-  .card-desc { color:#777; font-size:14px; margin-bottom:6px;}
-  .card-link { margin-top:auto; font-weight:600; color:#a366e8; }
+  .card h3 { margin: 6px 0 8px; font-size:18px; color: var(--text-dark, #eef4ff); text-align:center; }
+  .card p { margin: 0; font-size:13.5px; color: rgba(20,26,34,0.86); text-align:center; }
+
+  .muted { opacity: 0.88; }
+
+  /* color bubbles */
+  .bubble-purple { background: rgba(125,92,255,0.16); }
+  .bubble-blue   { background: rgba(0,201,255,0.14); }
+  .bubble-peach  { background: rgba(255,204,157,0.12); }
+  .bubble-gray   { background: rgba(220,225,235,0.06); }
+  .bubble-pink   { background: rgba(255,180,220,0.12); }
+
+  /* footer */
+  .footer { margin-top: 18px; text-align:center; color: rgba(20,30,44,0.6); font-size:13px; }
+
+  /* responsive */
+  @media (max-width: 720px) {
+    .bm-container { padding: 12px; }
+    .hero { padding: 36px 12px; min-height: 150px; }
+    .title { font-size: clamp(20px, 8vw, 36px); }
+  }
   `;
-        mount.appendChild(style);
+
+        const style = document.createElement('style');
+        style.textContent = css;
+        document.head.appendChild(style);
+
+        /* ================= CANVAS PARTICLES (scoped to hero) ================= */
+        const canvas = root.querySelector('.hero-canvas');
+        const ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
+        let dpr = window.devicePixelRatio || 1;
+        let w = 0,
+            h = 0,
+            particles = [],
+            raf = null;
+
+        function resizeCanvas() {
+            if (!canvas || !ctx) return;
+            dpr = window.devicePixelRatio || 1;
+            w = canvas.width = canvas.clientWidth * dpr;
+            h = canvas.height = canvas.clientHeight * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function createParticles() {
+            particles = [];
+            if (!canvas) return;
+            const count = Math.max(10, Math.floor(canvas.clientWidth / 90));
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * canvas.clientWidth,
+                    y: Math.random() * canvas.clientHeight,
+                    r: 1 + Math.random() * 3,
+                    v: 0.1 + Math.random() * 0.45,
+                    alpha: 0.04 + Math.random() * 0.14
+                });
+            }
+        }
+
+        function drawParticles() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+            particles.forEach(p => {
+                p.y -= p.v;
+                if (p.y < -10) {
+                    p.y = canvas.clientHeight + 10;
+                    p.x = Math.random() * canvas.clientWidth;
+                }
+                const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 8);
+                grad.addColorStop(0, `rgba(125,92,255,${p.alpha})`);
+                grad.addColorStop(0.6, `rgba(0,201,255,${p.alpha * 0.45})`);
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.beginPath();
+                ctx.fillStyle = grad;
+                ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            raf = requestAnimationFrame(drawParticles);
+        }
+
+        function initParticles() {
+            if (!ctx) return;
+            resizeCanvas();
+            createParticles();
+            if (raf) cancelAnimationFrame(raf);
+            drawParticles();
+        }
+
+        // observe hero size
+        const hero = root.querySelector('.hero');
+        const ro = new ResizeObserver(() => {
+            resizeCanvas();
+            createParticles();
+        });
+        ro.observe(hero);
+        initParticles();
+
+        /* ================ mouse-follow spotlight (scoped) ================ */
+        function onHeroMouseMove(e) {
+            const rect = hero.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            hero.style.setProperty('--x', x + 'px');
+            hero.style.setProperty('--y', y + 'px');
+        }
+        hero.addEventListener('mousemove', onHeroMouseMove);
+        hero.addEventListener('mouseleave', () => {
+            hero.style.setProperty('--x', (hero.clientWidth / 2) + 'px');
+            hero.style.setProperty('--y', (hero.clientHeight / 2) + 'px');
+        });
+        // set center initially
+        hero.style.setProperty('--x', (hero.clientWidth / 2) + 'px');
+        hero.style.setProperty('--y', (hero.clientHeight / 2) + 'px');
+
+        /* ================ 3D tilt for cards ================ */
+        function applyTilt(inner, e) {
+            const rect = inner.getBoundingClientRect();
+            const px = (e.clientX - rect.left) / rect.width;
+            const py = (e.clientY - rect.top) / rect.height;
+            const rx = (py - 0.5) * -6;
+            const ry = (px - 0.5) * 10;
+            inner.style.transform = `translateZ(0) rotateX(${rx}deg) rotateY(${ry}deg)`;
+        }
+
+        function resetTilt(inner) {
+            inner.style.transform = '';
+        }
+
+        const tiltEls = root.querySelectorAll('[data-tilt]');
+        tiltEls.forEach(card => {
+            const inner = card.querySelector('.card-inner');
+            if (!inner) return;
+            card.addEventListener('mousemove', (e) => applyTilt(inner, e));
+            card.addEventListener('mouseleave', () => {
+                inner.style.transition = 'transform 220ms ease';
+                resetTilt(inner);
+                setTimeout(() => inner.style.transition = '', 240);
+            });
+            card.addEventListener('mouseenter', () => {
+                inner.style.transition = 'transform 120ms';
+                setTimeout(() => inner.style.transition = '', 160);
+            });
+        });
+
+        /* ================ reduced-motion support ================ */
+        const rm = window.matchMedia('(prefers-reduced-motion: reduce)');
+        if (rm.matches) {
+            // stop particle animation & remove mouse listeners
+            particles = [];
+            if (raf) {
+                cancelAnimationFrame(raf);
+                raf = null;
+            }
+            hero.removeEventListener('mousemove', onHeroMouseMove);
+            tiltEls.forEach(card => {
+                const inner = card.querySelector('.card-inner');
+                if (!inner) return;
+                card.removeEventListener('mousemove', (e) => applyTilt(inner, e));
+            });
+        }
+
+        /* ================ intersection observer: pause when not visible ================ */
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(en => {
+                if (en.isIntersecting) {
+                    if (!particles.length) createParticles();
+                    if (!raf) drawParticles();
+                } else {
+                    if (raf) {
+                        cancelAnimationFrame(raf);
+                        raf = null;
+                    }
+                }
+            });
+        }, {
+            threshold: 0.05
+        });
+        io.observe(hero);
 
     })();
 </script>
