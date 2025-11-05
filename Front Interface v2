@@ -1,0 +1,531 @@
+<div id="bitmymit"></div>
+<script>
+    (() => {
+        const mount = document.getElementById("bitmymit");
+        if (!mount) return;
+
+        // keep widget from being clipped, try to sit above local content
+        mount.style.position = mount.style.position || "relative";
+        mount.style.zIndex = "9999";
+
+        const links = {
+            quiz: "https://lexue.bit.edu.cn/mod/hvp/view.php?id=514901",
+            pdf: "https://lexue.bit.edu.cn/pluginfile.php/761257/mod_resource/content/1/AI%20Overview%20Study%20Guide.pdf?forcedownload=1",
+            files: "https://lexue.bit.edu.cn/mod/folder/view.php?id=512418"
+        };
+
+        // remove existing widget root (safety) so re-pasting works cleanly
+        const existing = mount.querySelector('.bitmymit-root');
+        if (existing) existing.remove();
+
+        // build DOM (keeps same structure you used before)
+        const root = document.createElement('div');
+        root.className = 'bitmymit-root';
+        root.innerHTML = `
+  <div class="bm-container">
+    <section class="hero">
+      <canvas class="hero-canvas" aria-hidden="true"></canvas>
+      <div class="hero-content">
+        <h1 class="title">BITmyMIT <span class="droplet">💦</span></h1>
+        <p class="tagline">"If we can learn AI, you can too."</p>
+        <p class="sub">AI Overview · Interactive Learning · Knowledge for Everyone</p>
+      </div>
+    </section>
+
+    <section class="cards-section">
+      <div class="grid">
+        <a class="card" href="${links.quiz}" target="_blank" data-tilt>
+          <div class="card-inner">
+            <div class="icon bubble-purple">🧠</div>
+            <h3>Interactive Quiz</h3>
+            <p>Practice & learn through guided questions.</p>
+          </div>
+        </a>
+
+        <a class="card" href="${links.pdf}" target="_blank" data-tilt>
+          <div class="card-inner">
+            <div class="icon bubble-blue">📘</div>
+            <h3>Study Guide (PDF)</h3>
+            <p>Our summary, explanations & diagrams.</p>
+          </div>
+        </a>
+
+        <a class="card" href="${links.files}" target="_blank" data-tilt>
+          <div class="card-inner">
+            <div class="icon bubble-peach">📂</div>
+            <h3>Slides + Materials</h3>
+            <p>Access everything in one place.</p>
+          </div>
+        </a>
+
+        <div class="card muted" data-tilt>
+          <div class="card-inner">
+            <div class="icon bubble-gray">💻</div>
+            <h3>GitHub (soon)</h3>
+            <p>We're still polishing our repo!</p>
+          </div>
+        </div>
+
+        <div class="card muted" data-tilt>
+          <div class="card-inner">
+            <div class="icon bubble-pink">🎬</div>
+            <h3>Video (soon)</h3>
+            <p>Editing in progress 🎞️ stay tuned!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer">Made with 💦 by Mikhael · Andrey · Kenrich · Dmitrii · Arina · Alina</p>
+  </div>
+  `;
+
+        mount.appendChild(root);
+
+        // Remove previously injected widget styles to avoid duplicates
+        Array.from(document.head.querySelectorAll('style')).forEach(s => {
+            if (s.textContent && s.textContent.includes('.bitmymit-root')) s.remove();
+        });
+
+        // Scoped CSS for the widget
+        const css = `
+/* ---------- BITmyMIT WIDGET (scoped) ---------- */
+.bitmymit-root {
+  --accent-cyan: #00C9FF;
+  --accent-purple: #7D5CFF;
+  --glass-white: rgba(255,255,255,0.14);
+  --text-dark: #0F172A;
+  --text-light: #eef4ff;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  box-sizing: border-box;
+  display:block;
+}
+
+/* container */
+.bm-container {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 14px;
+  background: linear-gradient(135deg,#F6FAFF,#E9F1FF,#FFFFFF);
+  border-radius: 12px;
+}
+
+/* HERO */
+.hero {
+  position: relative;
+  padding: 56px 18px;
+  border-radius: 14px;
+  overflow: hidden;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg,#0e1a2b,#1a2f49 40%,#253b67);
+  color: var(--text-light);
+  box-shadow: 0 12px 34px rgba(6,10,14,0.45);
+  /* spotlight vars */
+  --spot-x: 50%;
+  --spot-y: 50%;
+  --spot-size: 420px;
+}
+
+/* soft spotlight that follows mouse (CSS vars controlled by JS) */
+.hero::after {
+  content: "";
+  position: absolute;
+  left: var(--spot-x);
+  top: var(--spot-y);
+  width: var(--spot-size);
+  height: var(--spot-size);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(255,255,255,0.06), transparent 45%);
+  filter: blur(28px) saturate(110%);
+  mix-blend-mode: screen;
+  z-index: 3;
+  transition: width .12s ease, height .12s ease;
+}
+
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero-content { position: relative; z-index: 6; text-align:center; max-width: 860px; padding: 6px 12px; }
+
+.title {
+  margin: 0;
+  font-weight: 800;
+  font-size: clamp(28px, 5.4vw, 56px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+  -webkit-background-clip: text;
+  color: transparent;
+  transition: transform 220ms cubic-bezier(.2,.9,.2,1);
+  will-change: transform;
+}
+
+.droplet { margin-left: 8px; display: inline-block; transform: translateY(-3px); filter: drop-shadow(0 6px 12px rgba(0,0,0,0.45)); }
+
+.tagline { margin-top: 8px; color: rgba(215,230,255,0.95); font-weight:600; font-size:15px; }
+.sub { margin-top: 6px; color: rgba(215,230,255,0.75); font-size:13.5px; }
+
+/* CARDS */
+.cards-section { margin-top: 12px; }
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-items: stretch;
+}
+
+.card { display: block; text-decoration: none; color: inherit; border-radius: 12px; }
+.card-inner {
+  background: var(--glass-white);
+  border-radius: 12px;
+  padding: 16px;
+  min-height: 140px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 8px 22px rgba(6,10,14,0.14);
+  transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms ease;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* hover lift */
+.card-inner:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 28px 60px rgba(6,10,14,0.36), 0 4px 12px rgba(0,201,255,0.04);
+  backdrop-filter: blur(18px);
+}
+
+.icon {
+  width:56px; height:56px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; margin-bottom:12px;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+}
+.card-inner:hover .icon { transform: translateY(-6px); box-shadow: 0 18px 36px rgba(0,0,0,0.36), 0 0 18px rgba(125,92,255,0.06); }
+
+.card h3 { margin: 6px 0 8px; font-size:18px; text-align:center; color: var(--text-dark, #eef4ff); }
+.card p { margin: 0; font-size:13.5px; text-align:center; color: rgba(20,26,34,0.86); }
+
+.muted { opacity: 0.88; }
+
+/* color bubbles */
+.bubble-purple { background: rgba(125,92,255,0.16); }
+.bubble-blue   { background: rgba(0,201,255,0.14); }
+.bubble-peach  { background: rgba(255,204,157,0.12); }
+.bubble-gray   { background: rgba(220,225,235,0.06); }
+.bubble-pink   { background: rgba(255,180,220,0.12); }
+
+.footer { margin-top: 18px; text-align:center; color: rgba(20,30,44,0.6); font-size:13px; }
+
+/* small screens */
+@media (max-width: 720px) {
+  .bm-container { padding: 12px; }
+  .hero { padding: 36px 12px; min-height: 150px; }
+  .title { font-size: clamp(20px, 8vw, 36px); }
+}
+
+/* utility: ensure no global transforms leak */
+.bitmymit-root * { box-sizing: border-box; }
+  `;
+
+        const style = document.createElement('style');
+        style.textContent = css;
+        document.head.appendChild(style);
+
+        /* ---------------- HERO PARTICLES (bubbles + sparkles) ---------------- */
+        const hero = root.querySelector('.hero');
+        const canvas = root.querySelector('.hero-canvas');
+        const ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
+        let dpr = window.devicePixelRatio || 1;
+        let cW = 0,
+            cH = 0;
+        let particles = [];
+        let sparkleParticles = [];
+        let particleRAF = null;
+
+        function resizeCanvas() {
+            if (!canvas || !ctx) return;
+            dpr = window.devicePixelRatio || 1;
+            cW = canvas.width = canvas.clientWidth * dpr;
+            cH = canvas.height = canvas.clientHeight * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function createParticles() {
+            particles = [];
+            sparkleParticles = [];
+            if (!canvas) return;
+            const count = Math.max(14, Math.floor(canvas.clientWidth / 70));
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * canvas.clientWidth,
+                    y: Math.random() * canvas.clientHeight,
+                    r: 0.8 + Math.random() * 3.6,
+                    v: 0.08 + Math.random() * 0.5,
+                    alpha: 0.03 + Math.random() * 0.12,
+                    hueShift: Math.random() * 60
+                });
+            }
+            // add sparse small white sparkles to layer above bubbles but still subtle
+            const spCount = Math.max(6, Math.floor(canvas.clientWidth / 220));
+            for (let i = 0; i < spCount; i++) {
+                sparkleParticles.push({
+                    x: Math.random() * canvas.clientWidth,
+                    y: Math.random() * canvas.clientHeight,
+                    r: 0.6 + Math.random() * 1.6,
+                    alpha: 0.15 + Math.random() * 0.35,
+                    life: 60 + Math.random() * 140,
+                    tick: Math.floor(Math.random() * 60)
+                });
+            }
+        }
+
+        function drawFrame() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+            // draw pastel bubbles
+            particles.forEach((p, i) => {
+                p.y -= p.v;
+                if (p.y < -20) {
+                    p.y = canvas.clientHeight + 20;
+                    p.x = Math.random() * canvas.clientWidth;
+                }
+                const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 8);
+                grad.addColorStop(0, `rgba(125,92,255,${p.alpha})`);
+                grad.addColorStop(0.6, `rgba(0,201,255,${p.alpha * 0.45})`);
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.beginPath();
+                ctx.fillStyle = grad;
+                ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // draw sparkles (subtle white glints)
+            sparkleParticles.forEach((s, i) => {
+                s.tick++;
+                // tiny vertical bob effect
+                const bob = Math.sin(s.tick * 0.06) * 4;
+                // fade in/out over life
+                const lifeProgress = (s.tick % s.life) / s.life;
+                const alphaNow = s.alpha * (0.6 + 0.4 * Math.sin(lifeProgress * Math.PI));
+                ctx.beginPath();
+                ctx.globalAlpha = Math.max(0, alphaNow);
+                ctx.fillStyle = '#fff';
+                ctx.arc(s.x, s.y + bob, s.r * 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            });
+
+            particleRAF = requestAnimationFrame(drawFrame);
+        }
+
+        function initParticles() {
+            if (!ctx) return;
+            resizeCanvas();
+            createParticles();
+            if (particleRAF) cancelAnimationFrame(particleRAF);
+            drawFrame();
+        }
+
+        const heroRO = new ResizeObserver(() => {
+            resizeCanvas();
+            createParticles();
+        });
+        heroRO.observe(hero);
+        initParticles();
+
+        /* ---------------- SPOTLIGHT (precise mouse-follow) ---------------- */
+        function onHeroMouseMove(e) {
+            const rect = hero.getBoundingClientRect();
+            const localX = e.clientX - rect.left;
+            const localY = e.clientY - rect.top;
+            hero.style.setProperty('--spot-x', (localX) + 'px');
+            hero.style.setProperty('--spot-y', (localY) + 'px');
+            // responsive size: smaller on tiny screens, larger on wide
+            const size = Math.max(220, Math.min(rect.width * 0.72, 520));
+            hero.style.setProperty('--spot-size', size + 'px');
+        }
+        hero.addEventListener('mousemove', onHeroMouseMove);
+        hero.addEventListener('mouseleave', () => {
+            hero.style.setProperty('--spot-x', (hero.clientWidth / 2) + 'px');
+            hero.style.setProperty('--spot-y', (hero.clientHeight / 2) + 'px');
+            hero.style.setProperty('--spot-size', '420px');
+        });
+        // init center
+        hero.style.setProperty('--spot-x', (hero.clientWidth / 2) + 'px');
+        hero.style.setProperty('--spot-y', (hero.clientHeight / 2) + 'px');
+        hero.style.setProperty('--spot-size', '420px');
+
+        /* ---------------- MAGNETIC PARALLAX (controlled + capped) ---------------- */
+        // We'll animate card-inner and title toward cursor but with limits
+        const magneticEls = [];
+        const titleEl = root.querySelector('.title');
+        if (titleEl) magneticEls.push(titleEl);
+        root.querySelectorAll('.card-inner').forEach(el => magneticEls.push(el));
+
+        const magState = new Map();
+        magneticEls.forEach(el => magState.set(el, {
+            tx: 0,
+            ty: 0,
+            rx: 0,
+            ry: 0
+        }));
+
+        let mouseX = null,
+            mouseY = null;
+
+        function onDocMouseMove(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        }
+        document.addEventListener('mousemove', onDocMouseMove);
+
+        // Parameters — tuned for stability
+        const BASE_TRANSLATE = 10; // px, base max translate (will scale by element size slightly)
+        const BASE_ROTATE = 8; // deg, base max rotation
+        const LERP_FACTOR_POS = 0.12;
+        const LERP_FACTOR_ROT = 0.10;
+
+        let magRAF = null;
+
+        function magTick() {
+            magneticEls.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+
+                const s = magState.get(el);
+
+                if (mouseX === null || mouseY === null) {
+                    // relax to reset
+                    s.tx += (0 - s.tx) * LERP_FACTOR_POS;
+                    s.ty += (0 - s.ty) * LERP_FACTOR_POS;
+                    s.rx += (0 - s.rx) * LERP_FACTOR_ROT;
+                    s.ry += (0 - s.ry) * LERP_FACTOR_ROT;
+                } else {
+                    const dx = (mouseX - centerX);
+                    const dy = (mouseY - centerY);
+                    // normalize
+                    const nx = dx / rect.width;
+                    const ny = dy / rect.height;
+
+                    // strength scaled by element width but capped
+                    const translateStrength = Math.min(BASE_TRANSLATE + rect.width / 80, 18); // px
+                    const rotateStrength = Math.min(BASE_ROTATE + rect.width / 120, 10); // deg
+
+                    // target values (lean toward the cursor but inverted for nice effect)
+                    const txTarget = clamp(-nx * translateStrength, -16, 16);
+                    const tyTarget = clamp(-ny * translateStrength * 0.6, -12, 12);
+                    const rxTarget = clamp(-ny * rotateStrength, -8, 8);
+                    const ryTarget = clamp(nx * rotateStrength, -8, 8);
+
+                    s.tx += (txTarget - s.tx) * LERP_FACTOR_POS;
+                    s.ty += (tyTarget - s.ty) * LERP_FACTOR_POS;
+                    s.rx += (rxTarget - s.rx) * LERP_FACTOR_ROT;
+                    s.ry += (ryTarget - s.ry) * LERP_FACTOR_ROT;
+                }
+
+                // apply small transform — keep translate last so hover transform stacks nicely
+                // Title should have much more subtle movement than cards
+                if (el === titleEl) {
+                    const ttx = s.tx * 0.4;
+                    const tty = s.ty * 0.4;
+                    const trx = s.rx * 0.25;
+                    const try_ = s.ry * 0.25;
+                    el.style.transform = `perspective(900px) translateZ(0) rotateX(${trx}deg) rotateY(${try_}deg) translateY(${tty}px) translateX(${ttx}px)`;
+                } else {
+                    el.style.transform = `perspective(900px) translateZ(0) rotateX(${s.rx}deg) rotateY(${s.ry}deg) translateY(${s.ty}px) translateX(${s.tx}px)`;
+                }
+            });
+
+            magRAF = requestAnimationFrame(magTick);
+        }
+        magTick();
+
+        // simple clamp helper
+        function clamp(v, a, b) {
+            return Math.max(a, Math.min(b, v));
+        }
+
+        // when mouse leaves document reset positions
+        document.addEventListener('mouseleave', () => {
+            mouseX = null;
+            mouseY = null;
+        });
+
+        /* ---------------- reduced-motion support ---------------- */
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+        if (reduced.matches) {
+            if (particleRAF) {
+                cancelAnimationFrame(particleRAF);
+                particleRAF = null;
+            }
+            if (magRAF) {
+                cancelAnimationFrame(magRAF);
+                magRAF = null;
+            }
+            hero.removeEventListener('mousemove', onHeroMouseMove);
+            document.removeEventListener('mousemove', onDocMouseMove);
+        }
+
+        /* ---------------- pause animations when not visible ---------------- */
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(en => {
+                if (en.isIntersecting) {
+                    if (!particles.length) createParticles();
+                    if (!particleRAF) drawFrame();
+                    if (!magRAF) magTick();
+                } else {
+                    if (particleRAF) {
+                        cancelAnimationFrame(particleRAF);
+                        particleRAF = null;
+                    }
+                    if (magRAF) {
+                        cancelAnimationFrame(magRAF);
+                        magRAF = null;
+                    }
+                }
+            });
+        }, {
+            threshold: 0.05
+        });
+        io.observe(hero);
+
+        // ensure cleanup on removal (in case widget is reloaded)
+        mount._bitmymit_cleanup = () => {
+            try {
+                if (particleRAF) cancelAnimationFrame(particleRAF);
+                if (magRAF) cancelAnimationFrame(magRAF);
+                heroRO.disconnect();
+                io.disconnect();
+                document.removeEventListener('mousemove', onDocMouseMove);
+                hero.removeEventListener('mousemove', onHeroMouseMove);
+            } catch (e) {}
+        };
+
+        // tiny accessibility: keyboard users shouldn't get motion surprises
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                // reduce movement by resetting mouse to null so elements relax
+                mouseX = null;
+                mouseY = null;
+            }
+        });
+
+    })();
+</script>
